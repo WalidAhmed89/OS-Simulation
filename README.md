@@ -102,7 +102,6 @@ python main.py
 | Adham Al Amir      | File System & Security  |
 | Ahmed              | File System & Security  |
 | Zeyad Mohamed      | I/O Management          |
-| Hazem              | I/O Management          |
 | Habiba Hamdy       | UI & UX                 |
 
 ---

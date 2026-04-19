@@ -1,14 +1,17 @@
 from collections import deque
 import tkinter as tk
 from tkinter import ttk
+from Memory import MemoryManager
 
+memory_manager = MemoryManager(total_memory=256)
 
 class Process:
-    def __init__(self, pid, burst_time):
+    def __init__(self, pid, burst_time, memory_size=32):
         self.pid = pid
         self.burst_time = burst_time
         self.remaining_time = burst_time
         self.state = "Ready"
+        self.memory_size = memory_size
 
 
 process_list = []
@@ -73,6 +76,24 @@ tree.tag_configure("Running", background="#00ff88")
 tree.tag_configure("Ready", background="#ffaa00")
 tree.tag_configure("Finished", background="#888888")
 
+# Memory Map Frame
+memory_frame = tk.Frame(root, bg="#1e1e1e")
+memory_frame.pack(pady=10)
+
+mem_label = tk.Label(memory_frame, text="Memory Map",
+                     bg="#1e1e1e", fg="white",
+                     font=("Arial", 10, "bold"))
+mem_label.pack()
+
+free_label = tk.Label(memory_frame, text="Free: 256 / 256",
+                      bg="#1e1e1e", fg="#00ff88",
+                      font=("Arial", 9))
+free_label.pack()
+
+mem_canvas = tk.Canvas(memory_frame, width=500, height=40,
+                       bg="#2b2b2b", highlightthickness=0)
+mem_canvas.pack()
+
 
 # Functions
 
@@ -84,15 +105,22 @@ def update_table():
         tree.insert("", "end",
                     values=(p.pid, p.state, p.remaining_time),
                     tags=(p.state,))
+    memory_manager.draw_memory_map(mem_canvas, width=500, height=40)
+    free_label.config(text=f"Free: {memory_manager.get_free_memory()} / {memory_manager.total_memory}")
 
 
 def add_process():
     global pid_counter
 
-    p = Process(pid_counter, 6)
+    p = Process(pid_counter, 6, memory_size=32)
+
+    address = memory_manager.allocate(p.pid, p.memory_size)
+    if address is None:
+        print("no memory available")
+        return
+
     process_list.append(p)
     queue.append(p)
-
     pid_counter += 1
     update_table()
 
@@ -139,6 +167,8 @@ def auto_run():
 
 def clear_all():
     global pid_counter, auto_running
+    for p in process_list:
+        memory_manager.deallocate(p.pid)
     process_list.clear()
     queue.clear()
     pid_counter = 1
@@ -151,6 +181,8 @@ def delete_process():
     if selected:
         item = tree.item(selected)
         pid = item['values'][0]
+
+        memory_manager.deallocate(pid)
 
         global process_list, queue
 

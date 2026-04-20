@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from Memory import MemoryManager
 
-memory_manager = MemoryManager(total_memory=256)
+memory_manager = MemoryManager(total_memory=512)
 
 class Process:
     def __init__(self, pid, burst_time, memory_size=32):
@@ -85,7 +85,7 @@ mem_label = tk.Label(memory_frame, text="Memory Map",
                      font=("Arial", 10, "bold"))
 mem_label.pack()
 
-free_label = tk.Label(memory_frame, text="Free: 256 / 256",
+free_label = tk.Label(memory_frame, text="Free: 512 / 512",
                       bg="#1e1e1e", fg="#00ff88",
                       font=("Arial", 9))
 free_label.pack()
@@ -141,10 +141,11 @@ def run_scheduler():
             else:
                 process.remaining_time = 0
                 process.state = "Finished"
+                memory_manager.deallocate(process.pid)
 
             update_table()
 
-        root.after(500, continue_execution)
+        root.after(250, continue_execution)
 
 
 def auto_run():

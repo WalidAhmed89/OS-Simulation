@@ -1,157 +1,198 @@
 import tkinter as tk
-from tkinter import messagebox
-from file_page import open_file_page  
+from PIL import Image, ImageTk, ImageDraw
+import subprocess
+import sys
 
-# --- Style Settings ---
-BG_COLOR = "#0f172a"
-FG_COLOR = "#f8fafc"
-ACCENT_COLOR = "#3b82f6"
-HOVER_COLOR = "#2563eb"
-PULSE_COLOR = "#6ea8fe"
-INPUT_BG = "#1e293b"
-INPUT_FG = "#f8fafc"
-FOCUS_BG = "#334155"
-FONT_MAIN = ("Segoe UI", 12)
-FONT_TITLE = ("Segoe UI", 24, "bold")
+BG_COLOR     = "#f5f7fb"
+CARD_COLOR   = "#ffffff"
+BORDER_COLOR = "#e2e8f0"
+FG_COLOR     = "#1f2937"
+SUB_COLOR    = "#64748b"
+ACCENT       = "#3b82f6"
+ACCENT_HOT   = "#2563eb"
+INPUT_BG     = "#f8fafc"
+INPUT_BORDER = "#cbd5e1"
+INPUT_FOCUS  = "#3b82f6"
+ERROR_COLOR  = "#ef4444"
+
+FONT_LABEL  = ("Courier", 10)
+FONT_INPUT  = ("Segoe UI", 11)
+FONT_BTN    = ("Georgia", 12, "bold")
+
+W, H = 850, 650
 
 users = {
     "admin": {"password": "123", "role": "ADMIN"},
-    "user": {"password": "123", "role": "USER"},
-    "guest": {"password": "123", "role": "GUEST"}
+    "user":  {"password": "123", "role": "USER"},
+    "guest": {"password": "123", "role": "GUEST"},
 }
 
-def login(event=None):
-    username = entry_user.get()
-    password = entry_pass.get()
 
-    if username in users and users[username]["password"] == password:
-        role = users[username]["role"]
-        
-        # Success Animation (Fade out and shrink)
-        def final_fade_out(window, alpha=1.0, rely=0.5):
-            if alpha > 0.0:
-                alpha -= 0.05
-                rely -= 0.01 # fly up
-                frame.place(relx=0.5, rely=rely, anchor=tk.CENTER)
-                window.attributes('-alpha', alpha)
-                window.after(15, lambda: final_fade_out(window, alpha, rely))
-            else:
-                window.withdraw()
-                open_file_page(role, window)
-                
-        final_fade_out(root)
-    else:
-        # Shake animation on error
-        def shake(window, count=0):
-            if count < 10:
-                x = root.winfo_x()
-                y = root.winfo_y()
-                dx = 5 if count % 2 == 0 else -5
-                window.geometry(f"+{x+dx}+{y}")
-                window.after(30, lambda: shake(window, count+1))
-        shake(root)
-        
-        lbl_title.config(fg="#ef4444", text="Invalid Login")
-        root.after(1500, lambda: lbl_title.config(fg=FG_COLOR, text="Welcome Back"))
+class LoginScreen:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Frosted — Login")
+        self.root.configure(bg=BG_COLOR)
+        self.root.resizable(False, False)
+        self.root.attributes("-alpha", 0.0)
 
+        sw = self.root.winfo_screenwidth()
+        sh = self.root.winfo_screenheight()
+        self.root.geometry(f"{W}x{H}+{(sw-W)//2}+{(sh-H)//2}")
 
-root = tk.Tk()
-root.title("OS Simulator - Login")
-root.geometry("400x500")
-root.configure(bg=BG_COLOR)
-root.attributes('-alpha', 0.0)
+        self.canvas = tk.Canvas(self.root, width=W, height=H,
+                                bg=BG_COLOR, highlightthickness=0)
+        self.canvas.pack()
 
-root.eval('tk::PlaceWindow . center')
+        self._draw_card()
+        self._build_widgets()
+        self._fade_in()
 
-frame = tk.Frame(root, bg=BG_COLOR)
-# Start lower for slide up animation
-frame.place(relx=0.5, rely=0.6, anchor=tk.CENTER)
+    # ───────── CARD ─────────
+    def _draw_card(self):
+        cx, cy = W // 2, H // 2
+        cw, ch = 360, 430
+        x0, y0 = cx - cw // 2, cy - ch // 2
+        x1, y1 = cx + cw // 2, cy + ch // 2
+        r = 18
 
-lbl_title = tk.Label(frame, text="", font=FONT_TITLE, bg=BG_COLOR, fg=FG_COLOR)
-lbl_title.pack(pady=(0, 30))
+        self.canvas.create_rectangle(x0+8, y0+10, x1+8, y1+10,
+                                     fill="#e2e8f0", outline="")
 
-tk.Label(frame, text="Username", font=FONT_MAIN, bg=BG_COLOR, fg="#94a3b8").pack(anchor="w")
-entry_user = tk.Entry(frame, font=FONT_MAIN, bg=INPUT_BG, fg=INPUT_FG, insertbackground=INPUT_FG, relief="flat", highlightthickness=1, highlightbackground="#334155")
-entry_user.pack(fill="x", pady=(5, 15), ipady=8, ipadx=10)
+        self.canvas.create_rectangle(x0+r, y0, x1-r, y1,
+                                     fill=CARD_COLOR, outline="")
+        self.canvas.create_rectangle(x0, y0+r, x1, y1-r,
+                                     fill=CARD_COLOR, outline="")
 
-tk.Label(frame, text="Password", font=FONT_MAIN, bg=BG_COLOR, fg="#94a3b8").pack(anchor="w")
-entry_pass = tk.Entry(frame, font=FONT_MAIN, bg=INPUT_BG, fg=INPUT_FG, insertbackground=INPUT_FG, relief="flat", show="*", highlightthickness=1, highlightbackground="#334155")
-entry_pass.pack(fill="x", pady=(5, 30), ipady=8, ipadx=10)
+        for ox, oy in [(x0, y0), (x1-2*r, y0),
+                       (x0, y1-2*r), (x1-2*r, y1-2*r)]:
+            self.canvas.create_oval(ox, oy, ox+2*r, oy+2*r,
+                                    fill=CARD_COLOR, outline="")
 
-btn_login = tk.Button(frame, text="LOGIN", font=("Segoe UI", 12, "bold"), bg=ACCENT_COLOR, fg="white", relief="flat", activebackground=HOVER_COLOR, activeforeground="white", command=login, cursor="hand2")
-btn_login.pack(fill="x", ipady=10)
+        self.canvas.create_rectangle(x0, y0, x1, y1,
+                                     outline=BORDER_COLOR)
 
-entry_pass.bind("<Return>", login)
-entry_user.bind("<Return>", lambda e: entry_pass.focus())
+    # ───────── UI ─────────
+    def _build_widgets(self):
+        cx = W // 2
 
-# --- Focus Animations (Border Glow) ---
-def on_focus_in(e):
-    e.widget.config(highlightbackground=PULSE_COLOR, bg=FOCUS_BG)
+        container = tk.Frame(self.root, bg=CARD_COLOR)
+        self.canvas.create_window(cx, H//2 + 10, window=container)
 
-def on_focus_out(e):
-    e.widget.config(highlightbackground="#334155", bg=INPUT_BG)
+        # ── LOGO ──
+        self.logo_canvas = tk.Canvas(container, width=90, height=90,
+                                     bg=CARD_COLOR, highlightthickness=0)
+        self.logo_canvas.pack(pady=(0, 15))
 
-entry_user.bind("<FocusIn>", on_focus_in)
-entry_user.bind("<FocusOut>", on_focus_out)
-entry_pass.bind("<FocusIn>", on_focus_in)
-entry_pass.bind("<FocusOut>", on_focus_out)
+        try:
+            img = Image.open("logoo.png").convert("RGBA")
+            img = img.resize((70, 70), Image.Resampling.LANCZOS)
 
-# --- Button Pulse Animation ---
-btn_hovered = False
+            mask = Image.new("L", (70, 70), 0)
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse((0, 0, 70, 70), fill=255)
+            img.putalpha(mask)
 
-def pulse_button(intensity=0, increasing=True):
-    if not btn_hovered:
-        colors = ["#2563eb", "#2d6ef0", "#3376f4", "#3b82f6", "#498df8", "#5a98f9", "#6aa6fb"]
-        btn_login.config(bg=colors[intensity])
-        
-        if increasing:
-            intensity += 1
-            if intensity >= len(colors)-1:
-                increasing = False
+            self.logo_img = ImageTk.PhotoImage(img)
+
+            self.logo_canvas.create_oval(10, 10, 80, 80,
+                                          fill="#e2e8f0", outline="")
+            self.logo_canvas.create_image(45, 45, image=self.logo_img)
+
+        except:
+            self.logo_canvas.create_text(
+                45, 45,
+                text="F",
+                font=("Georgia", 28, "bold"),
+                fill=ACCENT
+            )
+
+        # USERNAME
+        tk.Label(container, text="USERNAME",
+                 font=FONT_LABEL, bg=CARD_COLOR,
+                 fg=SUB_COLOR).pack(anchor="w")
+
+        self.entry_user = self._make_entry(container)
+        self.entry_user.pack(fill="x", pady=(4, 14))
+
+        # PASSWORD
+        tk.Label(container, text="PASSWORD",
+                 font=FONT_LABEL, bg=CARD_COLOR,
+                 fg=SUB_COLOR).pack(anchor="w")
+
+        self.entry_pass = self._make_entry(container, show="•")
+        self.entry_pass.pack(fill="x", pady=(4, 22))
+
+        # BUTTON
+        tk.Button(
+            container,
+            text="SIGN IN",
+            font=FONT_BTN,
+            bg=ACCENT,
+            fg="white",
+            activebackground=ACCENT_HOT,
+            relief="flat",
+            cursor="hand2",
+            command=self.login
+        ).pack(fill="x", ipady=10)
+
+        # ERROR
+        self.lbl_error = tk.Label(container, text="",
+                                   font=FONT_LABEL,
+                                   bg=CARD_COLOR,
+                                   fg=ERROR_COLOR)
+        self.lbl_error.pack(pady=10)
+
+        self.entry_user.bind("<Return>", lambda e: self.entry_pass.focus())
+        self.entry_pass.bind("<Return>", self.login)
+
+        self.entry_user.focus()
+
+    def _make_entry(self, parent, show=None):
+        return tk.Entry(
+            parent,
+            font=FONT_INPUT,
+            bg=INPUT_BG,
+            fg=FG_COLOR,
+            insertbackground=FG_COLOR,
+            relief="flat",
+            highlightthickness=1,
+            highlightbackground=INPUT_BORDER,
+            highlightcolor=INPUT_FOCUS,
+            show=show or ""
+        )
+
+    # ───────── LOGIN ─────────
+    def login(self, event=None):
+        u = self.entry_user.get()
+        p = self.entry_pass.get()
+
+        if u in users and users[u]["password"] == p:
+            self._fade_out()
         else:
-            intensity -= 1
-            if intensity <= 0:
-                increasing = True
-    
-    root.after(80, lambda: pulse_button(intensity, increasing))
+            self.lbl_error.config(text="Invalid username or password")
+            self.root.after(2000, lambda: self.lbl_error.config(text=""))
 
-def on_enter(e):
-    global btn_hovered
-    btn_hovered = True
-    e.widget['background'] = HOVER_COLOR
+    # ───────── ANIMATION ─────────
+    def _fade_in(self, a=0.0):
+        a += 0.05
+        self.root.attributes("-alpha", min(a, 1.0))
+        if a < 1:
+            self.root.after(20, lambda: self._fade_in(a))
 
-def on_leave(e):
-    global btn_hovered
-    btn_hovered = False
-    e.widget['background'] = ACCENT_COLOR
+    def _fade_out(self, a=1.0):
+        if a > 0:
+            a -= 0.06
+            self.root.attributes("-alpha", max(a, 0.0))
+            self.root.after(15, lambda: self._fade_out(a))
+        else:
+            self.root.withdraw()
+            subprocess.Popen([sys.executable, "home.py"])
 
-btn_login.bind("<Enter>", on_enter)
-btn_login.bind("<Leave>", on_leave)
+    def run(self):
+        self._fade_in()
+        self.root.mainloop()
 
-# --- Start Animations ---
-def slide_up(rely=0.6):
-    if rely > 0.5:
-        rely -= 0.005
-        frame.place(relx=0.5, rely=rely, anchor=tk.CENTER)
-        root.after(15, lambda: slide_up(rely))
 
-def type_title(text="Welcome Back", idx=0):
-    if idx <= len(text):
-        lbl_title.config(text=text[:idx])
-        root.after(70, lambda: type_title(text, idx+1))
-
-def fade_in(alpha=0.0):
-    if alpha < 1.0:
-        alpha += 0.05
-        root.attributes('-alpha', alpha)
-        root.after(15, lambda: fade_in(alpha))
-
-fade_in()
-slide_up()
-type_title()
-pulse_button()
-
-# Start with focus on username
-entry_user.focus()
-
-root.mainloop()
+if __name__ == "__main__":
+    LoginScreen().run()

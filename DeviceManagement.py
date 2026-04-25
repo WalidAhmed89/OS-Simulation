@@ -2,82 +2,177 @@ import time
 import threading
 import tkinter as tk
 
+# ── Theme ─────────────────────────────
+BG    = "#f5f7fb"
+CARD  = "#ffffff"
+BORDER= "#e2e8f0"
+FG    = "#1f2937"
+SUB   = "#64748b"
+ACCENT= "#3b82f6"
+GREEN = "#10b981"
+RED   = "#ef4444"
 
+W, H = 850, 650
+
+
+# ───────────────────────── Device ─────────────────────────
 class IODevice:
-    def __init__(self, name):
+    def __init__(self, name, log_callback):
         self.name = name
         self.status = "Available"
+        self.log = log_callback
 
-    def send_request(self, task_name, duration):
+    def send_request(self, task, duration):
         if self.status == "Busy":
-            print(f"{self.name} is currently Busy. Try again later.")
             return
 
-        thread = threading.Thread(target=self.process_task, args=(task_name, duration))
-        thread.start()
+        threading.Thread(
+            target=self.process,
+            args=(task, duration),
+            daemon=True
+        ).start()
 
-    def process_task(self, task_name, duration):
+    def process(self, task, duration):
         self.status = "Busy"
-        print(f"{self.name} started task: {task_name}")
+        self.log(f"{self.name} started {task}")
 
-        time.sleep(duration)
+        steps = 5
+        for i in range(steps):
+            time.sleep(duration / steps)
+            self.log(f"{self.name} processing... {int((i+1)/steps*100)}%")
 
-        print(f"{self.name} finished task: {task_name}")
+        self.log(f"{self.name} finished {task}")
         self.status = "Available"
 
-    def get_status(self):
-        return f"{self.name}: {self.status}"
+
+# ───────────────────────── UI ─────────────────────────
+class DeviceManagerUI:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Device Manager - Frosted OS")
+        self.root.geometry(f"{W}x{H}")
+        self.root.configure(bg=BG)
+
+        # Header
+        tk.Label(
+            self.root,
+            text="Device Manager",
+            font=("Georgia", 18, "bold"),
+            bg=BG,
+            fg=ACCENT
+        ).pack(pady=15)
+
+        # Devices Frame
+        self.devices_frame = tk.Frame(self.root, bg=BG)
+        self.devices_frame.pack()
+
+        # Log box
+        self.log_box = tk.Listbox(
+            self.root,
+            height=10,
+            bg="white",
+            fg=FG,
+            highlightthickness=1,
+            highlightbackground=BORDER
+        )
+        self.log_box.pack(fill="both", padx=20, pady=10)
+
+        # Devices (NOW SIDE BY SIDE)
+        self.devices = {}
+        self.create_device("Keyboard", "Typing Input", 3, 0, 0)
+        self.create_device("Printer", "Print Document", 5, 0, 1)
+
+        self.root.mainloop()
+
+    # ───────────────────────── Log ─────────────────────────
+    def add_log(self, text):
+        self.log_box.insert(0, text)
+
+    # ───────────────────────── Device Row ─────────────────────────
+    def create_device(self, name, task, duration, row, col):
+        frame = tk.Frame(
+            self.devices_frame,
+            bg=CARD,
+            highlightbackground=BORDER,
+            highlightthickness=1,
+            padx=20,
+            pady=15
+        )
+        frame.grid(row=row, column=col, pady=10, padx=20, sticky="n")
+
+        title = tk.Label(frame, text=name, font=("Georgia", 12, "bold"),
+                         bg=CARD, fg=FG)
+        title.grid(row=0, column=0, sticky="w")
+
+        status = tk.Label(frame, text="Available",
+                          font=("Courier", 10),
+                          bg=CARD, fg=GREEN)
+        status.grid(row=1, column=0, sticky="w")
+
+        activity = tk.Label(frame, text="Idle",
+                            font=("Courier", 10),
+                            bg=CARD, fg=SUB)
+        activity.grid(row=2, column=0, sticky="w", pady=5)
+
+        btn = tk.Button(
+            frame,
+            text=f"Start {name}",
+            bg=ACCENT,
+            fg="white",
+            relief="flat",
+            cursor="hand2",
+            command=lambda: self.run_device(name, task, duration)
+        )
+        btn.grid(row=0, column=1, rowspan=3, padx=20)
+
+        self.devices[name] = {
+            "status": status,
+            "activity": activity,
+            "task": task,
+            "duration": duration
+        }
+
+    # ───────────────────────── Run Device ─────────────────────────
+    def run_device(self, name, task, duration):
+        device_ui = self.devices[name]
+
+        device = IODevice(name, self.add_log)
+
+        def update_ui():
+            status = device.status
+            device_ui["status"].config(
+                text=status,
+                fg=GREEN if status == "Available" else RED
+            )
+
+        def live_activity():
+            device.status = "Busy"
+
+            steps = [
+                "Starting...",
+                "Loading drivers...",
+                "Processing...",
+                "Working...",
+                "Finalizing..."
+            ]
+
+            for i, step in enumerate(steps):
+                device_ui["activity"].config(text=step)
+                self.root.update()
+                time.sleep(duration / len(steps))
+
+            device_ui["activity"].config(text="Done ✔")
+            self.add_log(f"{name} completed successfully")
+
+            time.sleep(1)
+            device_ui["activity"].config(text="Idle")
+
+            device.status = "Available"
+            update_ui()
+
+        threading.Thread(target=live_activity, daemon=True).start()
 
 
-# Devices
-keyboard = IODevice("Keyboard")
-printer = IODevice("Printer")
-
-
-# GUI
-root = tk.Tk()
-root.title("Device Manager")
-root.geometry("400x250")
-root.configure(bg="#1e1e1e")
-
-
-# Labels
-keyboard_label = tk.Label(root, text=keyboard.get_status(),
-                          fg="white", bg="#1e1e1e", font=("Arial", 12))
-keyboard_label.pack(pady=10)
-
-printer_label = tk.Label(root, text=printer.get_status(),
-                         fg="white", bg="#1e1e1e", font=("Arial", 12))
-printer_label.pack(pady=10)
-
-
-# Buttons
-def send_keyboard():
-    keyboard.send_request("Typing Input", 3)
-
-
-def send_printer():
-    printer.send_request("Print Document", 5)
-
-
-keyboard_btn = tk.Button(root, text="Use Keyboard",
-                         command=send_keyboard,
-                         bg="#4CAF50", fg="white", width=20)
-keyboard_btn.pack(pady=5)
-
-printer_btn = tk.Button(root, text="Use Printer",
-                        command=send_printer,
-                        bg="#2196F3", fg="white", width=20)
-printer_btn.pack(pady=5)
-
-
-# تحديث الحالة كل ثانية
-def update_status():
-    keyboard_label.config(text=keyboard.get_status())
-    printer_label.config(text=printer.get_status())
-    root.after(1000, update_status)
-
-
-update_status()
-
-root.mainloop()
+# ───────────────────────── Run ─────────────────────────
+if __name__ == "__main__":
+    DeviceManagerUI()

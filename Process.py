@@ -5,6 +5,18 @@ from Memory import MemoryManager
 
 memory_manager = MemoryManager(total_memory=512)
 
+# ── Theme ─────────────────────────────
+BG = "#f5f7fb"
+CARD = "#ffffff"
+BORDER = "#e2e8f0"
+FG = "#1f2937"
+ACCENT = "#3b82f6"
+GREEN = "#10b981"
+ORANGE = "#f59e0b"
+RED = "#ef4444"
+PURPLE = "#8b5cf6"
+
+# ── Process ───────────────────────────
 class Process:
     def __init__(self, pid, burst_time, memory_size=32):
         self.pid = pid
@@ -19,84 +31,104 @@ queue = deque()
 pid_counter = 1
 auto_running = False
 
-# GUI
+# ── ROOT ─────────────────────────────
 root = tk.Tk()
 root.title("OS Process Scheduler")
+root.geometry("850x650")
+root.configure(bg=BG)
 
-# Center window
-window_width = 700
-window_height = 450
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-x = int((screen_width / 2) - (window_width / 2))
-y = int((screen_height / 2) - (window_height / 2))
-root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+# ── TOP: MEMORY MAP ─────────────────────────────
+memory_frame = tk.Frame(root, bg=BG)
+memory_frame.pack(pady=10, fill="x")
 
-root.configure(bg="#1e1e1e")
+tk.Label(
+    memory_frame,
+    text="Memory Map",
+    bg=BG,
+    fg=ACCENT,
+    font=("Segoe UI", 12, "bold")
+).pack()
 
-# Frames
-top_frame = tk.Frame(root, bg="#1e1e1e")
-top_frame.pack(pady=10)
+free_label = tk.Label(
+    memory_frame,
+    text="Free: 512 / 512",
+    bg=BG,
+    fg=GREEN,
+    font=("Segoe UI", 10)
+)
+free_label.pack()
 
-table_frame = tk.Frame(root, bg="#1e1e1e")
-table_frame.pack(expand=True)
+mem_canvas = tk.Canvas(
+    memory_frame,
+    width=600,
+    height=35,
+    bg="white",
+    highlightthickness=1,
+    highlightbackground=BORDER
+)
+mem_canvas.pack(pady=5)
 
-# Table Style
+# ── MIDDLE: TABLE ─────────────────────────────
+table_frame = tk.Frame(root, bg=BG)
+table_frame.pack(expand=True, fill="both", padx=15)
+
 style = ttk.Style()
 style.theme_use("default")
 
-style.configure("Treeview",
-                background="#2b2b2b",
-                foreground="white",
-                rowheight=25,
-                fieldbackground="#2b2b2b")
+style.configure(
+    "Treeview",
+    background="white",
+    foreground=FG,
+    rowheight=28,
+    fieldbackground="white",
+    bordercolor=BORDER
+)
 
-style.configure("Treeview.Heading",
-                background="#444",
-                foreground="white",
-                font=("Arial", 10, "bold"))
+style.configure(
+    "Treeview.Heading",
+    background=BG,
+    foreground=ACCENT,
+    font=("Segoe UI", 10, "bold")
+)
 
-# Table
-tree = ttk.Treeview(table_frame,
-                    columns=("PID", "State", "Remaining"),
-                    show="headings")
+tree = ttk.Treeview(
+    table_frame,
+    columns=("PID", "State", "Remaining"),
+    show="headings"
+)
 
 tree.heading("PID", text="PID")
 tree.heading("State", text="State")
-tree.heading("Remaining", text="Remaining Time")
+tree.heading("Remaining", text="Remaining")
 
-tree.column("PID", anchor="center")
-tree.column("State", anchor="center")
-tree.column("Remaining", anchor="center")
+tree.column("PID", anchor="center", width=100)
+tree.column("State", anchor="center", width=200)
+tree.column("Remaining", anchor="center", width=200)
 
-tree.pack(expand=True)
+tree.pack(expand=True, fill="both")
 
-# Colors
-tree.tag_configure("Running", background="#00ff88")
-tree.tag_configure("Ready", background="#ffaa00")
-tree.tag_configure("Finished", background="#888888")
+tree.tag_configure("Running", background="#dcfce7")
+tree.tag_configure("Ready", background="#fef3c7")
+tree.tag_configure("Finished", background="#e5e7eb")
 
-# Memory Map Frame
-memory_frame = tk.Frame(root, bg="#1e1e1e")
-memory_frame.pack(pady=10)
+# ── BOTTOM: BUTTONS ─────────────────────────────
+bottom = tk.Frame(root, bg=BG)
+bottom.pack(pady=15)
 
-mem_label = tk.Label(memory_frame, text="Memory Map",
-                     bg="#1e1e1e", fg="white",
-                     font=("Arial", 10, "bold"))
-mem_label.pack()
+def make_btn(text, color, cmd):
+    return tk.Button(
+        bottom,
+        text=text,
+        command=cmd,
+        bg=color,
+        fg="white",
+        font=("Segoe UI", 10, "bold"),
+        bd=0,
+        cursor="hand2",
+        width=12
+    )
 
-free_label = tk.Label(memory_frame, text="Free: 512 / 512",
-                      bg="#1e1e1e", fg="#00ff88",
-                      font=("Arial", 9))
-free_label.pack()
-
-mem_canvas = tk.Canvas(memory_frame, width=500, height=40,
-                       bg="#2b2b2b", highlightthickness=0)
-mem_canvas.pack()
-
-
-# Functions
-
+# ── FUNCTIONS ─────────────────────────────
 def update_table():
     for row in tree.get_children():
         tree.delete(row)
@@ -105,8 +137,11 @@ def update_table():
         tree.insert("", "end",
                     values=(p.pid, p.state, p.remaining_time),
                     tags=(p.state,))
-    memory_manager.draw_memory_map(mem_canvas, width=500, height=40)
-    free_label.config(text=f"Free: {memory_manager.get_free_memory()} / {memory_manager.total_memory}")
+
+    memory_manager.draw_memory_map(mem_canvas, width=600, height=35)
+    free_label.config(
+        text=f"Free: {memory_manager.get_free_memory()} / {memory_manager.total_memory}"
+    )
 
 
 def add_process():
@@ -116,7 +151,6 @@ def add_process():
 
     address = memory_manager.allocate(p.pid, p.memory_size)
     if address is None:
-        print("no memory available")
         return
 
     process_list.append(p)
@@ -133,7 +167,7 @@ def run_scheduler():
         process.state = "Running"
         update_table()
 
-        def continue_execution():
+        def continue_exec():
             if process.remaining_time > quantum:
                 process.remaining_time -= quantum
                 process.state = "Ready"
@@ -145,7 +179,7 @@ def run_scheduler():
 
             update_table()
 
-        root.after(250, continue_execution)
+        root.after(250, continue_exec)
 
 
 def auto_run():
@@ -170,6 +204,7 @@ def clear_all():
     global pid_counter, auto_running
     for p in process_list:
         memory_manager.deallocate(p.pid)
+
     process_list.clear()
     queue.clear()
     pid_counter = 1
@@ -181,39 +216,21 @@ def delete_process():
     selected = tree.selection()
     if selected:
         item = tree.item(selected)
-        pid = item['values'][0]
+        pid = item["values"][0]
 
         memory_manager.deallocate(pid)
 
         global process_list, queue
-
         process_list = [p for p in process_list if p.pid != pid]
         queue = deque([p for p in queue if p.pid != pid])
 
         update_table()
 
-
-# Buttons
-
-add_btn = tk.Button(top_frame, text="Add Process", command=add_process,
-                    bg="#4CAF50", fg="white", width=12)
-
-run_btn = tk.Button(top_frame, text="Run Step", command=run_scheduler,
-                    bg="#2196F3", fg="white", width=12)
-
-auto_btn = tk.Button(top_frame, text="Auto Run", command=auto_run,
-                     bg="#FF9800", fg="white", width=12)
-
-clear_btn = tk.Button(top_frame, text="Clear", command=clear_all,
-                      bg="#f44336", fg="white", width=12)
-
-delete_btn = tk.Button(top_frame, text="End Task", command=delete_process,
-                       bg="#9C27B0", fg="white", width=12)
-
-add_btn.grid(row=0, column=0, padx=5)
-run_btn.grid(row=0, column=1, padx=5)
-auto_btn.grid(row=0, column=2, padx=5)
-clear_btn.grid(row=0, column=3, padx=5)
-delete_btn.grid(row=0, column=4, padx=5)
+# ── BUTTONS ─────────────────────────────
+make_btn("Add", GREEN, add_process).pack(side="left", padx=5)
+make_btn("Run", ACCENT, run_scheduler).pack(side="left", padx=5)
+make_btn("Auto", ORANGE, auto_run).pack(side="left", padx=5)
+make_btn("Clear", RED, clear_all).pack(side="left", padx=5)
+make_btn("End", PURPLE, delete_process).pack(side="left", padx=5)
 
 root.mainloop()

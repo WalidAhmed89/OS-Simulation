@@ -1,13 +1,9 @@
 # process_api.py — Shared Process & Memory State
-# ═══════════════════════════════════════════════
-# بيكتب وبيقرأ من processes.json عشان كل الملفات تشوف نفس الداتا
-# حتى لو كل ملف subprocess منفصل
-
 import json
 import os
 from Memory import MemoryManager
 
-# ── ملف الـ JSON اللي هيتكتب فيه كل حاجة
+
 JSON_FILE = "processes.json"
 
 # ── Memory manager
@@ -67,7 +63,6 @@ def _save(process_list, pid_counter):
     with open(JSON_FILE, "w") as f:
         json.dump(data, f, indent=2)
 
-    # في process_api.py نضيف:
 
 
 def update_state(pid, new_state):

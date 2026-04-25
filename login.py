@@ -3,7 +3,7 @@ from PIL import Image, ImageTk, ImageDraw
 import subprocess
 import sys
 
-# ── ضفنا import من process_api عشان نعمل spawn لـ Login process
+# Login process
 from process_api import spawn_process, finish_process
 
 BG_COLOR     = "#f5f7fb"
@@ -171,13 +171,10 @@ class LoginScreen:
         p = self.entry_pass.get()
 
         if u in users and users[u]["password"] == p:
-            # ── spawn process اسمها Login
-            # ── burst_time=2 يعني هتخلص في ثانيتين
-            # ── memory_size=16 حجم صغير لأنها عملية بسيطة
+
             login_proc = spawn_process("Login", burst_time=2, memory_size=16)
 
-            # ── بعد ثانيتين نخلي الـ process تبقى Finished
-            # ── وبعدين نعمل fade out وننتقل لـ home
+
             def on_finish():
                 if login_proc:
                     finish_process(login_proc.pid)

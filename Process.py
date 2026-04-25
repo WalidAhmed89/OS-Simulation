@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from collections import deque
 
-# ── بنجيب الـ state من process_api (JSON-backed)
+#process_api (JSON-backed)
 from process_api import (
     memory_manager,
     spawn_process,
@@ -14,7 +14,7 @@ from process_api import (
     get_all, update_process
 )
 
-# ── queue محلية للـ scheduler (مش محتاج تتحفظ في JSON)
+# scheduler
 queue = deque()
 auto_running = False
 
@@ -120,7 +120,7 @@ name_entry.insert(0, "Process Name")
 name_entry.pack(side="left", padx=5)
 
 
-# ── UI UPDATE — بيقرأ من JSON ويعرض كل حاجة
+# ── UI UPDATE
 def update_ui():
     process_list = get_all()
     memory_manager.rebuild_from_processes(process_list)
@@ -138,7 +138,7 @@ def update_ui():
     )
 
 
-# ── AUTO REFRESH — بيعمل update كل ثانية عشان يشوف processes جديدة
+# ── AUTO REFRESH
 def auto_refresh():
     update_ui()
     root.after(1000, auto_refresh)
@@ -165,7 +165,7 @@ def ui_delete():
 
 
 def ui_run():
-    # لو الـ queue فاضية نملأها من الـ JSON بالـ Ready processes
+    # Ready processes
     if not queue:
         for p in get_all():
             if p.state == "Ready":

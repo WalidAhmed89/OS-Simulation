@@ -2,6 +2,8 @@ import time
 import threading
 import tkinter as tk
 
+from process_api import spawn_process, finish_process, update_state
+
 # ── Theme ─────────────────────────────
 BG    = "#f5f7fb"
 CARD  = "#ffffff"
@@ -18,14 +20,13 @@ W, H = 850, 650
 # ───────────────────────── Device ─────────────────────────
 class IODevice:
     def __init__(self, name, log_callback):
-        self.name = name
+        self.name   = name
         self.status = "Available"
-        self.log = log_callback
+        self.log    = log_callback
 
     def send_request(self, task, duration):
         if self.status == "Busy":
             return
-
         threading.Thread(
             target=self.process,
             args=(task, duration),
@@ -35,12 +36,10 @@ class IODevice:
     def process(self, task, duration):
         self.status = "Busy"
         self.log(f"{self.name} started {task}")
-
         steps = 5
         for i in range(steps):
             time.sleep(duration / steps)
             self.log(f"{self.name} processing... {int((i+1)/steps*100)}%")
-
         self.log(f"{self.name} finished {task}")
         self.status = "Available"
 
@@ -53,100 +52,78 @@ class DeviceManagerUI:
         self.root.geometry(f"{W}x{H}")
         self.root.configure(bg=BG)
 
-        # Header
-        tk.Label(
-            self.root,
-            text="Device Manager",
-            font=("Georgia", 18, "bold"),
-            bg=BG,
-            fg=ACCENT
-        ).pack(pady=15)
+        tk.Label(self.root, text="Device Manager",
+                 font=("Georgia", 18, "bold"), bg=BG, fg=ACCENT).pack(pady=15)
 
-        # Devices Frame
         self.devices_frame = tk.Frame(self.root, bg=BG)
         self.devices_frame.pack()
 
-        # Log box
-        self.log_box = tk.Listbox(
-            self.root,
-            height=10,
-            bg="white",
-            fg=FG,
-            highlightthickness=1,
-            highlightbackground=BORDER
-        )
+        self.log_box = tk.Listbox(self.root, height=10, bg="white", fg=FG,
+                                  highlightthickness=1, highlightbackground=BORDER)
         self.log_box.pack(fill="both", padx=20, pady=10)
 
-        # Devices (NOW SIDE BY SIDE)
-        self.devices = {}
-        self.create_device("Keyboard", "Typing Input", 3, 0, 0)
-        self.create_device("Printer", "Print Document", 5, 0, 1)
+        self.devices     = {}
+        self.device_objs = {}
+
+        self.create_device("Keyboard", "Typing Input",   3, 0, 0)
+        self.create_device("Printer",  "Print Document", 5, 0, 1)
 
         self.root.mainloop()
 
-    # ───────────────────────── Log ─────────────────────────
     def add_log(self, text):
         self.log_box.insert(0, text)
 
-    # ───────────────────────── Device Row ─────────────────────────
     def create_device(self, name, task, duration, row, col):
-        frame = tk.Frame(
-            self.devices_frame,
-            bg=CARD,
-            highlightbackground=BORDER,
-            highlightthickness=1,
-            padx=20,
-            pady=15
-        )
+        frame = tk.Frame(self.devices_frame, bg=CARD,
+                         highlightbackground=BORDER, highlightthickness=1,
+                         padx=20, pady=15)
         frame.grid(row=row, column=col, pady=10, padx=20, sticky="n")
 
-        title = tk.Label(frame, text=name, font=("Georgia", 12, "bold"),
-                         bg=CARD, fg=FG)
-        title.grid(row=0, column=0, sticky="w")
+        tk.Label(frame, text=name, font=("Georgia", 12, "bold"),
+                 bg=CARD, fg=FG).grid(row=0, column=0, sticky="w")
 
-        status = tk.Label(frame, text="Available",
-                          font=("Courier", 10),
-                          bg=CARD, fg=GREEN)
-        status.grid(row=1, column=0, sticky="w")
+        status_lbl = tk.Label(frame, text="Available",
+                              font=("Courier", 10), bg=CARD, fg=GREEN)
+        status_lbl.grid(row=1, column=0, sticky="w")
 
-        activity = tk.Label(frame, text="Idle",
-                            font=("Courier", 10),
-                            bg=CARD, fg=SUB)
-        activity.grid(row=2, column=0, sticky="w", pady=5)
+        activity_lbl = tk.Label(frame, text="Idle",
+                                font=("Courier", 10), bg=CARD, fg=SUB)
+        activity_lbl.grid(row=2, column=0, sticky="w", pady=5)
 
-        btn = tk.Button(
-            frame,
-            text=f"Start {name}",
-            bg=ACCENT,
-            fg="white",
-            relief="flat",
-            cursor="hand2",
-            command=lambda: self.run_device(name, task, duration)
-        )
-        btn.grid(row=0, column=1, rowspan=3, padx=20)
+        tk.Button(frame, text=f"Start {name}", bg=ACCENT, fg="white",
+                  relief="flat", cursor="hand2",
+                  command=lambda: self.run_device(name)
+                  ).grid(row=0, column=1, rowspan=3, padx=20)
 
         self.devices[name] = {
-            "status": status,
-            "activity": activity,
-            "task": task,
-            "duration": duration
+            "status_lbl":   status_lbl,
+            "activity_lbl": activity_lbl,
+            "task":         task,
+            "duration":     duration,
         }
+        self.device_objs[name] = IODevice(name, self.add_log)
 
-    # ───────────────────────── Run Device ─────────────────────────
-    def run_device(self, name, task, duration):
-        device_ui = self.devices[name]
+    def run_device(self, name):
+        ui     = self.devices[name]
+        device = self.device_objs[name]
 
-        device = IODevice(name, self.add_log)
+        if device.status == "Busy":
+            return
 
-        def update_ui():
-            status = device.status
-            device_ui["status"].config(
-                text=status,
-                fg=GREEN if status == "Available" else RED
-            )
+        task     = ui["task"]
+        duration = ui["duration"]
 
         def live_activity():
             device.status = "Busy"
+
+            # ── spawn → Ready
+            proc = spawn_process(f"io_{name.lower()}", burst_time=duration, memory_size=16)
+
+            # ── Ready → Running لما يبدأ فعلاً
+            if proc:
+                update_state(proc.pid, "Running")
+
+            self.root.after(0, lambda: ui["status_lbl"].config(text="Busy", fg=RED))
 
             steps = [
                 "Starting...",
@@ -156,23 +133,24 @@ class DeviceManagerUI:
                 "Finalizing..."
             ]
 
-            for i, step in enumerate(steps):
-                device_ui["activity"].config(text=step)
-                self.root.update()
+            for step in steps:
+                self.root.after(0, lambda s=step: ui["activity_lbl"].config(text=s))
                 time.sleep(duration / len(steps))
 
-            device_ui["activity"].config(text="Done ✔")
+            # ── Running → Finished لما يخلص
+            self.root.after(0, lambda: ui["activity_lbl"].config(text="Done ✔"))
             self.add_log(f"{name} completed successfully")
 
-            time.sleep(1)
-            device_ui["activity"].config(text="Idle")
+            if proc:
+                finish_process(proc.pid)
 
+            time.sleep(1)
             device.status = "Available"
-            update_ui()
+            self.root.after(0, lambda: ui["status_lbl"].config(text="Available", fg=GREEN))
+            self.root.after(0, lambda: ui["activity_lbl"].config(text="Idle"))
 
         threading.Thread(target=live_activity, daemon=True).start()
 
 
-# ───────────────────────── Run ─────────────────────────
 if __name__ == "__main__":
     DeviceManagerUI()

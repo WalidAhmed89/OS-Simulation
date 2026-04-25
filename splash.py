@@ -1,6 +1,8 @@
 import tkinter as tk
 from PIL import Image, ImageTk, ImageDraw
 import subprocess
+import sys
+
 
 
 class SplashScreen:
@@ -218,7 +220,7 @@ class SplashScreen:
             self.splash.after(20, lambda: self.fade_out(alpha))
         else:
             self.splash.destroy()
-            subprocess.Popen(["python", "login.py"])
+            subprocess.Popen([sys.executable, "login.py"])
 
     def run(self):
         self.splash.mainloop()

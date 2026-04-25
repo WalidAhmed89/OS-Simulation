@@ -17,6 +17,14 @@ class MemoryManager:
                 return start
         return None
 
+    def rebuild_from_processes(self, process_list):
+        self.free_list = [(0, self.total_memory)]
+        self.allocated = {}
+
+        for p in process_list:
+            if p.state != "Finished":
+                self.allocate(p.pid, p.memory_size)
+
     def deallocate(self, pid):
         if pid not in self.allocated:
             return
@@ -64,14 +72,13 @@ class MemoryManager:
                 outline=""
             )
 
-            if x2 - x1 > 25:
-                canvas.create_text(
-                    (x1 + x2) / 2,
-                    height / 2,
-                    text=f"P{pid}",
-                    fill="white",
-                    font=("Segoe UI", 9, "bold")
-                )
+            canvas.create_text(
+                (x1 + x2) / 2,
+                height / 2,
+                text=f"P{pid}",
+                fill="white",
+                font=("Arial", 6)  # صغر الخط
+            )
 
         # border
         canvas.create_rectangle(

@@ -1,8 +1,11 @@
+import os
 import tkinter as tk
 import subprocess
 import datetime
 import sys
 from PIL import Image, ImageTk
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ── Theme ─────────────────────────────────────────────
 BG        = "#f5f7fb"
@@ -126,7 +129,7 @@ class AppCard:
                 from file_page import open_file_page
                 open_file_page()
             else:
-                subprocess.Popen([sys.executable, self.data["file"]])
+                subprocess.Popen([sys.executable, os.path.join(BASE_DIR, self.data["file"])])
         except Exception as ex:
             print("Error opening app:", ex)
 

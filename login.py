@@ -1,7 +1,10 @@
+import os
 import tkinter as tk
 from PIL import Image, ImageTk, ImageDraw
 import subprocess
 import sys
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Login process
 from process_api import spawn_process, finish_process
@@ -199,7 +202,7 @@ class LoginScreen:
             self.root.after(15, lambda: self._fade_out(a))
         else:
             self.root.withdraw()
-            subprocess.Popen([sys.executable, "home.py"])
+            subprocess.Popen([sys.executable, os.path.join(BASE_DIR, "home.py")])
 
     def run(self):
         self._fade_in()

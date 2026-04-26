@@ -6,7 +6,6 @@ import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Login process
 from process_api import spawn_process, finish_process
 
 BG_COLOR     = "#f5f7fb"
@@ -21,9 +20,9 @@ INPUT_BORDER = "#cbd5e1"
 INPUT_FOCUS  = "#3b82f6"
 ERROR_COLOR  = "#ef4444"
 
-FONT_LABEL  = ("Courier", 10)
-FONT_INPUT  = ("Segoe UI", 11)
-FONT_BTN    = ("Georgia", 12, "bold")
+FONT_LABEL = ("Courier", 10)
+FONT_INPUT = ("Segoe UI", 11)
+FONT_BTN   = ("Georgia", 12, "bold")
 
 W, H = 850, 650
 
@@ -53,130 +52,85 @@ class LoginScreen:
         self._draw_card()
         self._build_widgets()
         self._fade_in()
+        self._home_proc = None  # ── بنحفظ الـ home process عشان نراقبه
 
-    # ───────── CARD ─────────
     def _draw_card(self):
-        cx, cy = W // 2, H // 2
+        cx, cy = W//2, H//2
         cw, ch = 360, 430
-        x0, y0 = cx - cw // 2, cy - ch // 2
-        x1, y1 = cx + cw // 2, cy + ch // 2
+        x0, y0 = cx-cw//2, cy-ch//2
+        x1, y1 = cx+cw//2, cy+ch//2
         r = 18
+        self.canvas.create_rectangle(x0+8,y0+10,x1+8,y1+10, fill="#e2e8f0", outline="")
+        self.canvas.create_rectangle(x0+r,y0,x1-r,y1, fill=CARD_COLOR, outline="")
+        self.canvas.create_rectangle(x0,y0+r,x1,y1-r, fill=CARD_COLOR, outline="")
+        for ox,oy in [(x0,y0),(x1-2*r,y0),(x0,y1-2*r),(x1-2*r,y1-2*r)]:
+            self.canvas.create_oval(ox,oy,ox+2*r,oy+2*r, fill=CARD_COLOR, outline="")
+        self.canvas.create_rectangle(x0,y0,x1,y1, outline=BORDER_COLOR)
 
-        self.canvas.create_rectangle(x0+8, y0+10, x1+8, y1+10,
-                                     fill="#e2e8f0", outline="")
-
-        self.canvas.create_rectangle(x0+r, y0, x1-r, y1,
-                                     fill=CARD_COLOR, outline="")
-        self.canvas.create_rectangle(x0, y0+r, x1, y1-r,
-                                     fill=CARD_COLOR, outline="")
-
-        for ox, oy in [(x0, y0), (x1-2*r, y0),
-                       (x0, y1-2*r), (x1-2*r, y1-2*r)]:
-            self.canvas.create_oval(ox, oy, ox+2*r, oy+2*r,
-                                    fill=CARD_COLOR, outline="")
-
-        self.canvas.create_rectangle(x0, y0, x1, y1,
-                                     outline=BORDER_COLOR)
-
-    # ───────── UI ─────────
     def _build_widgets(self):
-        cx = W // 2
-
+        cx = W//2
         container = tk.Frame(self.root, bg=CARD_COLOR)
-        self.canvas.create_window(cx, H//2 + 10, window=container)
+        self.canvas.create_window(cx, H//2+10, window=container)
 
-        # ── LOGO ──
         self.logo_canvas = tk.Canvas(container, width=90, height=90,
                                      bg=CARD_COLOR, highlightthickness=0)
-        self.logo_canvas.pack(pady=(0, 15))
-
+        self.logo_canvas.pack(pady=(0,15))
         try:
-            img = Image.open("logoo.png").convert("RGBA")
-            img = img.resize((70, 70), Image.Resampling.LANCZOS)
-
-            mask = Image.new("L", (70, 70), 0)
-            draw = ImageDraw.Draw(mask)
-            draw.ellipse((0, 0, 70, 70), fill=255)
+            img = Image.open("logoo.png").convert("RGBA").resize((70,70), Image.Resampling.LANCZOS)
+            mask = Image.new("L",(70,70),0)
+            ImageDraw.Draw(mask).ellipse((0,0,70,70), fill=255)
             img.putalpha(mask)
-
             self.logo_img = ImageTk.PhotoImage(img)
-
-            self.logo_canvas.create_oval(10, 10, 80, 80,
-                                          fill="#e2e8f0", outline="")
-            self.logo_canvas.create_image(45, 45, image=self.logo_img)
-
+            self.logo_canvas.create_oval(10,10,80,80, fill="#e2e8f0", outline="")
+            self.logo_canvas.create_image(45,45, image=self.logo_img)
         except:
-            self.logo_canvas.create_text(
-                45, 45,
-                text="F",
-                font=("Georgia", 28, "bold"),
-                fill=ACCENT
-            )
+            self.logo_canvas.create_text(45,45, text="F",
+                                          font=("Georgia",28,"bold"), fill=ACCENT)
 
-        # USERNAME
-        tk.Label(container, text="USERNAME",
-                 font=FONT_LABEL, bg=CARD_COLOR,
-                 fg=SUB_COLOR).pack(anchor="w")
-
+        tk.Label(container, text="USERNAME", font=FONT_LABEL,
+                 bg=CARD_COLOR, fg=SUB_COLOR).pack(anchor="w")
         self.entry_user = self._make_entry(container)
-        self.entry_user.pack(fill="x", pady=(4, 14))
+        self.entry_user.pack(fill="x", pady=(4,14))
 
-        # PASSWORD
-        tk.Label(container, text="PASSWORD",
-                 font=FONT_LABEL, bg=CARD_COLOR,
-                 fg=SUB_COLOR).pack(anchor="w")
-
+        tk.Label(container, text="PASSWORD", font=FONT_LABEL,
+                 bg=CARD_COLOR, fg=SUB_COLOR).pack(anchor="w")
         self.entry_pass = self._make_entry(container, show="•")
-        self.entry_pass.pack(fill="x", pady=(4, 22))
+        self.entry_pass.pack(fill="x", pady=(4,22))
 
-        # BUTTON
-        tk.Button(
-            container,
-            text="SIGN IN",
-            font=FONT_BTN,
-            bg=ACCENT,
-            fg="white",
-            activebackground=ACCENT_HOT,
-            relief="flat",
-            cursor="hand2",
-            command=self.login
-        ).pack(fill="x", ipady=10)
+        self.btn_signin = tk.Button(container, text="SIGN IN", font=FONT_BTN,
+                  bg=ACCENT, fg="white", activebackground=ACCENT_HOT,
+                  relief="flat", cursor="hand2",
+                  command=self.login)
+        self.btn_signin.pack(fill="x", ipady=10)
 
-        # ERROR
-        self.lbl_error = tk.Label(container, text="",
-                                   font=FONT_LABEL,
-                                   bg=CARD_COLOR,
-                                   fg=ERROR_COLOR)
+        self.lbl_error = tk.Label(container, text="", font=FONT_LABEL,
+                                   bg=CARD_COLOR, fg=ERROR_COLOR)
         self.lbl_error.pack(pady=10)
 
         self.entry_user.bind("<Return>", lambda e: self.entry_pass.focus())
         self.entry_pass.bind("<Return>", self.login)
-
         self.entry_user.focus()
 
     def _make_entry(self, parent, show=None):
-        return tk.Entry(
-            parent,
-            font=FONT_INPUT,
-            bg=INPUT_BG,
-            fg=FG_COLOR,
-            insertbackground=FG_COLOR,
-            relief="flat",
-            highlightthickness=1,
-            highlightbackground=INPUT_BORDER,
-            highlightcolor=INPUT_FOCUS,
-            show=show or ""
-        )
+        return tk.Entry(parent, font=FONT_INPUT, bg=INPUT_BG, fg=FG_COLOR,
+                        insertbackground=FG_COLOR, relief="flat",
+                        highlightthickness=1, highlightbackground=INPUT_BORDER,
+                        highlightcolor=INPUT_FOCUS, show=show or "")
 
-    # ───────── LOGIN ─────────
     def login(self, event=None):
         u = self.entry_user.get()
         p = self.entry_pass.get()
 
         if u in users and users[u]["password"] == p:
+            self._role = users[u]["role"]
+
+            # ── نعطل كل الـ inputs عشان المستخدم ميضغطش حاجة
+            self.entry_user.config(state="disabled")
+            self.entry_pass.config(state="disabled")
+            self.btn_signin.config(state="disabled", bg="#93c5fd", cursor="arrow")
+            self.lbl_error.config(text="Authenticating...", fg=ACCENT)
 
             login_proc = spawn_process("Login", burst_time=2, memory_size=16)
-
 
             def on_finish():
                 if login_proc:
@@ -188,7 +142,21 @@ class LoginScreen:
             self.lbl_error.config(text="Invalid username or password")
             self.root.after(2000, lambda: self.lbl_error.config(text=""))
 
-    # ───────── ANIMATION ─────────
+    def _watch_home(self):
+        if self._home_proc and self._home_proc.poll() is not None:
+            self._home_proc = None
+            self.entry_user.delete(0, tk.END)
+            self.entry_pass.delete(0, tk.END)
+            # ── نرجع نفعّل كل حاجة لما يرجع للـ login
+            self.entry_user.config(state="normal")
+            self.entry_pass.config(state="normal")
+            self.btn_signin.config(state="normal", bg=ACCENT, cursor="hand2")
+            self.lbl_error.config(text="")
+            self.root.deiconify()
+            self._fade_in()
+        else:
+            self.root.after(500, self._watch_home)
+
     def _fade_in(self, a=0.0):
         a += 0.05
         self.root.attributes("-alpha", min(a, 1.0))
@@ -202,7 +170,12 @@ class LoginScreen:
             self.root.after(15, lambda: self._fade_out(a))
         else:
             self.root.withdraw()
-            subprocess.Popen([sys.executable, os.path.join(BASE_DIR, "home.py")])
+            # ── نفتح home ونحفظ الـ process عشان نراقبه
+            self._home_proc = subprocess.Popen(
+                [sys.executable, os.path.join(BASE_DIR, "home.py"), self._role]
+            )
+            # ── نبدأ المراقبة
+            self.root.after(500, self._watch_home)
 
     def run(self):
         self._fade_in()

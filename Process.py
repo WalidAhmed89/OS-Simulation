@@ -141,7 +141,7 @@ def update_ui():
 # ── AUTO REFRESH
 def auto_refresh():
     update_ui()
-    root.after(2500, auto_refresh)
+    root.after(1500, auto_refresh)
 
 
 # ── GUI ACTIONS

@@ -1,0 +1,29 @@
+{
+  "cwd": "/home/Frosted",
+  "tree": {
+    "/home": {
+      "type": "dir",
+      "created": "2026-05-01 14:56:58",
+      "modified": "2026-05-01 14:56:58",
+      "accessed": "2026-05-01 14:56:58"
+    },
+    "/home/Frosted": {
+      "type": "dir",
+      "created": "2026-05-01 14:57:40",
+      "modified": "2026-05-01 14:57:40",
+      "accessed": "2026-05-01 14:57:40"
+    },
+    "/home/Adham": {
+      "type": "dir",
+      "created": "2026-05-01 15:01:31",
+      "modified": "2026-05-01 15:01:31",
+      "accessed": "2026-05-01 15:01:31"
+    },
+    "/home/Frosted/fff": {
+      "type": "dir",
+      "created": "2026-05-01 15:32:35",
+      "modified": "2026-05-01 15:32:35",
+      "accessed": "2026-05-01 15:32:35"
+    }
+  }
+}

@@ -181,14 +181,42 @@ def open_file_page(role="ADMIN", login_window=None):
     btns = tk.Frame(left, bg=BG)
     btns.pack(fill="x", pady=5)
 
-    # ── FILE LOGIC (الـ buttons بتشتغل على الـ cwd)
+    # ── FILE LOGIC (الـ buttons بتشتغل على الـ selected أو الـ cwd)
+    def get_target_dir():
+        """بترجع الـ directory اللي المفروض نضيف فيها — الـ selected folder أو الـ cwd"""
+        path = selected_path[0]
+        if not path:
+            return None  # هنستخدم cwd
+        data = fs._load()
+        node = data["tree"].get(path)
+        if node and node["type"] == "dir":
+            return path  # الـ selected هو folder → نضيف جواه
+        else:
+            # الـ selected هو file → نضيف في نفس الـ parent بتاعه
+            return "/".join(path.split("/")[:-1])
+
     def create_file():
         name = entry_name.get().strip()
         if not name:
             messagebox.showerror("Error", "Enter file name", parent=file_window); return
-        ok, msg = fs.touch(name)
+
+        target_dir = get_target_dir()
+        if target_dir:
+            # ── نعمل cd مؤقت للـ target directory
+            old_cwd = fs.get_cwd()
+            fs.cd(target_dir)
+            ok, msg = fs.touch(name)
+            fs.cd(old_cwd)
+        else:
+            ok, msg = fs.touch(name)
+
         if not ok:
             messagebox.showerror("Error", msg, parent=file_window); return
+
+        # ── نفتح الـ folder عشان يبان الـ file الجديد
+        if target_dir:
+            expanded.add(target_dir)
+
         refresh_tree()
         run_proc("fs_create")
         messagebox.showinfo("Success", f"File '{name}' was created", parent=file_window)
@@ -198,9 +226,22 @@ def open_file_page(role="ADMIN", login_window=None):
         name = entry_name.get().strip()
         if not name:
             messagebox.showerror("Error", "Enter folder name", parent=file_window); return
-        ok, msg = fs.mkdir(name)
+
+        target_dir = get_target_dir()
+        if target_dir:
+            old_cwd = fs.get_cwd()
+            fs.cd(target_dir)
+            ok, msg = fs.mkdir(name)
+            fs.cd(old_cwd)
+        else:
+            ok, msg = fs.mkdir(name)
+
         if not ok:
             messagebox.showerror("Error", msg, parent=file_window); return
+
+        if target_dir:
+            expanded.add(target_dir)
+
         refresh_tree()
         run_proc("fs_mkdir")
         messagebox.showinfo("Success", f"Folder '{name}' was created", parent=file_window)

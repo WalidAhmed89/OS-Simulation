@@ -12,10 +12,7 @@ FS_FILE = "fs.json"
 FS_ROOT = "/home"
 
 
-# ══════════════════════════════════════════════
 #  JSON helpers
-# ══════════════════════════════════════════════
-
 def _load():
     if not os.path.exists(FS_FILE):
         # ── أول مرة: نعمل الـ /home directory
@@ -45,9 +42,7 @@ def _now():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-# ══════════════════════════════════════════════
 #  Path helpers
-# ══════════════════════════════════════════════
 
 def _resolve(cwd, path):
     """بتحول أي path (relative أو absolute) لـ absolute path"""
@@ -58,7 +53,7 @@ def _resolve(cwd, path):
     else:
         full = cwd.rstrip("/") + "/" + path
 
-    # resolve .. و .
+    # resolve ...
     parts = []
     for p in full.split("/"):
         if p == "..":
@@ -98,9 +93,7 @@ def _is_hidden(path):
     return _basename(path).startswith(".")
 
 
-# ══════════════════════════════════════════════
 #  Public API
-# ══════════════════════════════════════════════
 
 def get_cwd():
     return _load()["cwd"]
@@ -162,7 +155,6 @@ def mkdir(path, parents=False):
     tree = data["tree"]
 
     if parents:
-        # mkdir -p: نعمل كل الـ intermediate dirs
         parts = path.split("/")
         current = cwd
         for part in parts:

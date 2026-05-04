@@ -71,7 +71,7 @@ def clear_system():
     auto_running = False
 
 
-# ── GUI LAYER ─────────────────────────────────────────────────
+# ── GUI LAYER
 
 root = tk.Tk()
 root.title("OS Process Scheduler")

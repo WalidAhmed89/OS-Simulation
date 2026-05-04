@@ -38,9 +38,7 @@ class Process:
         return p
 
 
-# ══════════════════════════════════════════════
 #  JSON helpers
-# ══════════════════════════════════════════════
 
 def _load():
     if not os.path.exists(JSON_FILE):
@@ -74,10 +72,7 @@ def update_state(pid, new_state):
             return
 
 
-# ══════════════════════════════════════════════
 #  Public API
-# ══════════════════════════════════════════════
-
 def spawn_process(name, burst_time=4, memory_size=32):
     process_list, pid_counter = _load()
     p = Process(pid_counter, name, burst_time, memory_size)

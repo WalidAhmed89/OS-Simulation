@@ -119,7 +119,7 @@ class DeviceManagerUI:
             # ── spawn → Ready
             proc = spawn_process(f"io_{name.lower()}", burst_time=duration, memory_size=16)
 
-            # ── Ready → Running لما يبدأ فعلاً
+            # ── Ready → Running
             if proc:
                 update_state(proc.pid, "Running")
 
@@ -137,7 +137,7 @@ class DeviceManagerUI:
                 self.root.after(0, lambda s=step: ui["activity_lbl"].config(text=s))
                 time.sleep(duration / len(steps))
 
-            # ── Running → Finished لما يخلص
+            # ── Running → Finished
             self.root.after(0, lambda: ui["activity_lbl"].config(text="Done ✔"))
             self.add_log(f"{name} completed successfully")
 

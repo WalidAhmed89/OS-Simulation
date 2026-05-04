@@ -32,25 +32,31 @@
       "modified": "2026-05-01 16:13:48",
       "accessed": "2026-05-01 16:13:48"
     },
-    "/home/Readme.md": {
-      "type": "file",
-      "content": "this is the best os project in hitu\n",
-      "created": "2026-05-01 16:14:05",
-      "modified": "2026-05-01 16:14:51",
-      "accessed": "2026-05-01 20:31:03"
-    },
-    "/home/ww": {
+    "/home/Frosted/WWW": {
       "type": "dir",
-      "created": "2026-05-03 16:59:21",
-      "modified": "2026-05-03 16:59:21",
-      "accessed": "2026-05-03 16:59:21"
+      "created": "2026-05-04 15:53:14",
+      "modified": "2026-05-04 15:53:14",
+      "accessed": "2026-05-04 15:53:14"
     },
-    "/home/ww/ww.txt": {
+    "/home/Frosted/WWW/UUU": {
       "type": "file",
       "content": "",
-      "created": "2026-05-03 16:59:28",
-      "modified": "2026-05-03 16:59:28",
-      "accessed": "2026-05-03 16:59:28"
+      "created": "2026-05-04 15:53:36",
+      "modified": "2026-05-04 15:53:36",
+      "accessed": "2026-05-04 15:53:36"
+    },
+    "/home/OSProject/Readme.md": {
+      "type": "file",
+      "content": "BEST OS IN HITU\n",
+      "created": "2026-05-04 16:39:30",
+      "modified": "2026-05-04 16:39:51",
+      "accessed": "2026-05-04 17:59:22"
+    },
+    "/home/OSProject/Walid": {
+      "type": "dir",
+      "created": "2026-05-04 17:14:36",
+      "modified": "2026-05-04 17:14:36",
+      "accessed": "2026-05-04 17:14:36"
     }
   }
 }

@@ -1,4 +1,61 @@
 {
-  "pid_counter": 1,
-  "processes": []
+  "pid_counter": 10,
+  "processes": [
+    {
+      "pid": 3,
+      "name": "Login",
+      "burst_time": 2,
+      "remaining_time": 0,
+      "memory_size": 16,
+      "state": "Finished"
+    },
+    {
+      "pid": 4,
+      "name": "Login",
+      "burst_time": 2,
+      "remaining_time": 0,
+      "memory_size": 16,
+      "state": "Finished"
+    },
+    {
+      "pid": 5,
+      "name": "io_keyboard",
+      "burst_time": 3,
+      "remaining_time": 0,
+      "memory_size": 16,
+      "state": "Finished"
+    },
+    {
+      "pid": 6,
+      "name": "io_printer",
+      "burst_time": 5,
+      "remaining_time": 0,
+      "memory_size": 16,
+      "state": "Finished"
+    },
+    {
+      "pid": 7,
+      "name": "Login",
+      "burst_time": 2,
+      "remaining_time": 0,
+      "memory_size": 16,
+      "state": "Finished"
+    },
+    {
+      "pid": 8,
+      "name": "io_keyboard",
+      "burst_time": 3,
+      "remaining_time": 0,
+      "memory_size": 16,
+      "state": "Finished"
+    },
+    {
+      "pid": 9,
+      "name": "Login",
+      "burst_time": 2,
+      "remaining_time": 0,
+      "memory_size": 16,
+      "state": "Finished"
+    }
+  ]
 }

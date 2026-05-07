@@ -7,8 +7,6 @@ from PIL import Image, ImageTk
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# ── نستقبل الـ role من login.py عن طريق sys.argv
-# ── لو مش موجود نحط ADMIN كـ default
 ROLE = sys.argv[1] if len(sys.argv) > 1 else "ADMIN"
 
 BG      = "#f5f7fb"
@@ -52,7 +50,6 @@ APPS = [
 ]
 
 
-# ── قائمة بالـ subprocesses المفتوحة عشان نقفلهم عند الـ logout
 _open_procs = []
 
 
@@ -111,7 +108,6 @@ class AppCard:
                 from file_page import open_file_page
                 open_file_page(role=ROLE, login_window=None)
             else:
-                # ── نحفظ الـ process عشان نقدر نقفله عند الـ logout
                 proc = subprocess.Popen([sys.executable,
                                          os.path.join(BASE_DIR, self.data["file"])])
                 _open_procs.append(proc)
@@ -127,7 +123,6 @@ class FilePage:
         self.root.geometry(f"{W}x{H}")
         self.root.attributes("-alpha", 0.0)
 
-        # ── لما يقفل الـ home يرجع لـ login
         self.root.protocol("WM_DELETE_WINDOW", self.logout)
 
         self.canvas = tk.Canvas(self.root, bg=BG, highlightthickness=0)
@@ -153,9 +148,8 @@ class FilePage:
                                 fill=SUB, font=("Courier", 8))
 
         self.clock_id = self.canvas.create_text(
-            W-15, H-20, text="", fill=SUB, anchor="e", font=("Courier",8))
+            60, H-20, text="", fill=SUB, anchor="w", font=("Courier",8))
 
-        # ── زرار Logout في الـ taskbar
         logout_btn = tk.Button(self.root, text="⏻ Logout", bg=TASKBAR,
                                fg="#ef4444", bd=0, font=("Segoe UI",9,"bold"),
                                cursor="hand2", command=self.logout)
@@ -182,7 +176,6 @@ class FilePage:
             self.root.after(20, lambda: self.fade(a))
 
     def logout(self):
-        # ── نقفل كل الـ subprocesses المفتوحة (Process, Device Manager)
         for proc in _open_procs:
             try:
                 proc.terminate()

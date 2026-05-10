@@ -71,7 +71,6 @@ class AppCard:
         x0, y0 = cx-w2, cy-h2
         x1, y1 = cx+w2, cy+h2
 
-        # ── لو GUEST وهو app محظور نغير لونه لرمادي
         locked = ROLE == "GUEST" and self.data["id"] in ["tasks", "devices"]
         color  = "#94a3b8" if locked else self.data["color"]
 
@@ -143,7 +142,6 @@ class FilePage:
         except:
             self.canvas.create_text(20, H-20, text="OS", fill=ACCENT)
 
-        # ── نعرض الـ role في الـ taskbar
         self.canvas.create_text(W//2, H-20, text=f"Logged in as: {ROLE}",
                                 fill=SUB, font=("Courier", 8))
 

@@ -1,10 +1,10 @@
 {
-  "cwd": "/home",
+  "cwd": "/home/Adham/Walid/Home",
   "tree": {
     "/home": {
       "type": "dir",
       "created": "2026-05-01 14:56:58",
-      "modified": "2026-05-01 14:56:58",
+      "modified": "2026-05-10 15:28:52",
       "accessed": "2026-05-01 14:56:58"
     },
     "/home/Frosted": {
@@ -52,18 +52,23 @@
       "modified": "2026-05-04 16:39:51",
       "accessed": "2026-05-05 15:03:15"
     },
-    "/home/Mohand": {
+    "/home/Adham": {
       "type": "dir",
-      "created": "2026-05-05 14:57:22",
-      "modified": "2026-05-05 14:57:22",
-      "accessed": "2026-05-05 14:57:22"
+      "created": "2026-05-10 15:33:52",
+      "modified": "2026-05-10 15:33:52",
+      "accessed": "2026-05-10 15:33:52"
     },
-    "/home/Mohand/Moand playing alorant": {
-      "type": "file",
-      "content": "\u0645\u0647\u0646\u062f \u0628\u064a\u062a\u062e\u0627\u0646\u0642 \u0645\u0639 \u0627\u0644 db\n",
-      "created": "2026-05-05 14:57:48",
-      "modified": "2026-05-05 14:58:04",
-      "accessed": "2026-05-05 15:03:12"
+    "/home/Adham/Walid": {
+      "type": "dir",
+      "created": "2026-05-10 15:33:52",
+      "modified": "2026-05-10 15:33:52",
+      "accessed": "2026-05-10 15:33:52"
+    },
+    "/home/Adham/Walid/Home": {
+      "type": "dir",
+      "created": "2026-05-10 15:33:52",
+      "modified": "2026-05-10 15:33:52",
+      "accessed": "2026-05-10 15:33:52"
     }
   }
 }

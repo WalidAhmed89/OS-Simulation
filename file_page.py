@@ -76,7 +76,6 @@ def open_file_page(role="ADMIN", login_window=None):
     main = tk.Frame(file_window, bg=BG)
     main.pack(fill="both", expand=True, padx=20)
 
-
     #  LEFT — Explorer (Tree View)
     left = tk.Frame(main, bg=BG)
     left.pack(side="left", fill="both", expand=True)
@@ -84,7 +83,6 @@ def open_file_page(role="ADMIN", login_window=None):
     tk.Label(left, text="Explorer", font=("Segoe UI",12,"bold"),
              bg=BG, fg=TITLE_BLUE).pack(anchor="w")
 
-    # ── Tree canvas & scrollbar
     tree_frame = tk.Frame(left, bg="white", highlightthickness=1,
                           highlightbackground="#e2e8f0")
     tree_frame.pack(fill="both", expand=True, pady=5)
@@ -103,7 +101,6 @@ def open_file_page(role="ADMIN", login_window=None):
         tree_canvas.configure(scrollregion=tree_canvas.bbox("all"))
     tree_inner.bind("<Configure>", on_frame_configure)
 
-    # ── expanded folders state
     expanded = set()
     selected_path = [None]
 
@@ -126,11 +123,9 @@ def open_file_page(role="ADMIN", login_window=None):
                 row = tk.Frame(tree_inner, bg="white", cursor="hand2")
                 row.pack(fill="x")
 
-                # ── highlight if selected
                 bg = "#dbeafe" if child == selected_path[0] else "white"
                 row.config(bg=bg)
 
-                # ── indent spacer
                 tk.Label(row, width=indent//8 + 1, bg=bg).pack(side="left")
 
                 if is_dir:
@@ -144,24 +139,19 @@ def open_file_page(role="ADMIN", login_window=None):
                     tk.Label(row, text="📄 " + name, font=FONT_MAIN,
                              bg=bg, fg=FG).pack(side="left", pady=1)
 
-                # ── click handler
                 def on_click(e, path=child, is_directory=is_dir):
                     selected_path[0] = path
-
                     if is_directory:
                         if path in expanded:
                             expanded.discard(path)
                         else:
                             expanded.add(path)
-
                     refresh_tree()
-
                     return "break"
 
                 row.bind("<Button-1>", on_click)
                 for w in row.winfo_children():
                     w.bind("<Button-1>", on_click)
-
 
                 if is_dir and is_exp:
                     render_dir(child, depth + 1)
@@ -170,7 +160,6 @@ def open_file_page(role="ADMIN", login_window=None):
 
     refresh_tree()
 
-    # ── inputs
     tk.Label(left, text="📄 File Name", bg=BG, fg=FG).pack(anchor="w")
     entry_name = tk.Entry(left, font=FONT_MAIN, bg="white", fg=FG, bd=0,
                           highlightthickness=1, highlightbackground="#e2e8f0")
@@ -184,17 +173,12 @@ def open_file_page(role="ADMIN", login_window=None):
     btns = tk.Frame(left, bg=BG)
     btns.pack(fill="x", pady=5)
 
-    # ── FILE LOGIC ──
-
     def get_target_dir():
         path = selected_path[0]
-
         if not path:
             return fs.FS_ROOT
-
         data = fs._load()
         node = data["tree"].get(path)
-
         if node and node["type"] == "dir":
             return path
         else:
@@ -202,10 +186,8 @@ def open_file_page(role="ADMIN", login_window=None):
 
     def clear_selection(event):
         widget = event.widget
-
         if str(widget).startswith(str(tree_inner)):
             return
-
         selected_path[0] = None
         refresh_tree()
 
@@ -216,22 +198,15 @@ def open_file_page(role="ADMIN", login_window=None):
         if not name:
             messagebox.showerror("Error", "Enter file name", parent=file_window)
             return
-
         target_dir = get_target_dir()
-
         old_cwd = fs.get_cwd()
         fs.cd(target_dir)
-
         ok, msg = fs.touch(name)
-
         fs.cd(old_cwd)
-
         if not ok:
             messagebox.showerror("Error", msg, parent=file_window)
             return
-
         expanded.add(target_dir)
-
         refresh_tree()
         run_proc("fs_create")
         messagebox.showinfo("Success", f"File '{name}' was created", parent=file_window)
@@ -242,22 +217,15 @@ def open_file_page(role="ADMIN", login_window=None):
         if not name:
             messagebox.showerror("Error", "Enter folder name", parent=file_window)
             return
-
         target_dir = get_target_dir()
-
         old_cwd = fs.get_cwd()
         fs.cd(target_dir)
-
         ok, msg = fs.mkdir(name)
-
         fs.cd(old_cwd)
-
         if not ok:
             messagebox.showerror("Error", msg, parent=file_window)
             return
-
         expanded.add(target_dir)
-
         refresh_tree()
         run_proc("fs_mkdir")
         messagebox.showinfo("Success", f"Folder '{name}' was created", parent=file_window)
@@ -268,9 +236,7 @@ def open_file_page(role="ADMIN", login_window=None):
         if not path:
             messagebox.showerror("Error", "Select a file or folder", parent=file_window)
             return
-
         ok, msg, needs_confirm = fs.rm(path, "-r")
-
         if ok and not needs_confirm:
             selected_path[0] = None
             refresh_tree()
@@ -283,9 +249,7 @@ def open_file_page(role="ADMIN", login_window=None):
         if not path:
             messagebox.showerror("Error", "Select a file", parent=file_window)
             return
-
         ok, content = fs.cat(path)
-
         if ok:
             messagebox.showinfo("Content", content, parent=file_window)
             run_proc("fs_read")
@@ -297,11 +261,8 @@ def open_file_page(role="ADMIN", login_window=None):
         if not path:
             messagebox.showerror("Error", "Select a file", parent=file_window)
             return
-
         content = entry_content.get()
-
         ok, msg = fs.write_file(path, content, append=True)
-
         if ok:
             entry_content.delete(0, tk.END)
             run_proc("fs_write")
@@ -320,7 +281,6 @@ def open_file_page(role="ADMIN", login_window=None):
     make_btn("✏️ Write",  ACCENT,    write_selected, disabled=(role=="GUEST"))
     make_btn("👁 Read",   "#8b5cf6", read_selected)
     make_btn("🗑 Delete", DANGER,    delete_selected, disabled=(role in ["USER","GUEST"]))
-
 
     #  RIGHT — Terminal
     right = tk.Frame(main, bg=BG)
@@ -354,7 +314,6 @@ def open_file_page(role="ADMIN", login_window=None):
                 return f"{line}.{col}"
         return tk.END
 
-    # ── pending rm -i confirmation
     pending_rm = [None]
 
     def run_command(raw):
@@ -362,7 +321,6 @@ def open_file_page(role="ADMIN", login_window=None):
         cmd = raw.strip()
         write("\n")
 
-        # confirmation pending
         if pending_rm[0]:
             path = pending_rm[0]
             pending_rm[0] = None
@@ -382,36 +340,33 @@ def open_file_page(role="ADMIN", login_window=None):
 
         c = parts[0]
 
-        # ── help
+        # ── [تعديل] أضفنا mv و find و rmdir في قائمة help ──
         if c == "help":
             write("Commands: ls, ls -a, ls -l, pwd, cd, mkdir, mkdir -p,\n"
                   "          touch, stat, rm, rm -r, rm -i, rm -v, rmdir,\n"
-                  "          cat, echo text > file, clear\n")
+                  "          mv <src> <dst>, find <name>, cat,\n"
+                  "          echo text > file, clear\n")
+        # ── [نهاية التعديل] ──────────────────────────────────────────
 
-        # ── clear
         elif c == "clear":
             output.delete("1.0", tk.END)
             write(get_prompt()); return
 
-        # ── pwd
         elif c == "pwd":
             write(fs.pwd() + "\n")
             run_proc("fs_pwd")
 
-        # ── cd
         elif c == "cd":
             target = parts[1] if len(parts) > 1 else "~"
             ok, msg = fs.cd(target)
             if not ok: write(msg + "\n")
             refresh_tree()
 
-        # ── ls / ls -a / ls -l / ls -la
         elif c == "ls":
             flags = " ".join(parts[1:])
             write(fs.ls(flags) + "\n")
             run_proc("fs_ls")
 
-        # ── mkdir / mkdir -p
         elif c == "mkdir":
             if role == "GUEST":
                 write("Permission denied\n")
@@ -426,7 +381,6 @@ def open_file_page(role="ADMIN", login_window=None):
                 if not ok: write(msg + "\n")
                 else: refresh_tree(); run_proc("fs_mkdir")
 
-        # ── touch flags
         elif c == "touch":
             if role == "GUEST":
                 write("Permission denied\n")
@@ -455,7 +409,6 @@ def open_file_page(role="ADMIN", login_window=None):
                 if not ok: write(msg + "\n")
                 else: refresh_tree(); run_proc("fs_touch")
 
-        # ── stat
         elif c == "stat":
             if len(parts) < 2:
                 write("Usage: stat <file>\n")
@@ -464,7 +417,6 @@ def open_file_page(role="ADMIN", login_window=None):
                 write(msg + "\n")
                 run_proc("fs_stat")
 
-        # ── rm و flags
         elif c == "rm":
             if role in ["USER", "GUEST"]:
                 write("Permission denied\n")
@@ -484,7 +436,7 @@ def open_file_page(role="ADMIN", login_window=None):
                 else:
                     write(msg + "\n")
 
-        # ── rmdir
+        # rmdir
         elif c == "rmdir":
             if role in ["USER", "GUEST"]:
                 write("Permission denied\n")
@@ -492,10 +444,12 @@ def open_file_page(role="ADMIN", login_window=None):
                 write("Usage: rmdir <dir>\n")
             else:
                 ok, msg = fs.rmdir(parts[1])
-                if not ok: write(msg + "\n")
-                else: refresh_tree(); run_proc("fs_rmdir")
+                if not ok:
+                    write(msg + "\n")
+                else:
+                    refresh_tree()
+                    run_proc("fs_rmdir")
 
-        # ── cat
         elif c == "cat":
             if len(parts) < 2:
                 write("Usage: cat <file>\n")
@@ -504,7 +458,6 @@ def open_file_page(role="ADMIN", login_window=None):
                 write(content + "\n")
                 run_proc("fs_read")
 
-        # ── echo text > file
         elif c == "echo":
             if role == "GUEST":
                 write("Permission denied\n")
@@ -524,18 +477,47 @@ def open_file_page(role="ADMIN", login_window=None):
                     else:
                         write(msg + "\n")
 
+        #──mv
+        elif c == "mv":
+            if role == "GUEST":
+                write("Permission denied\n")
+            elif len(parts) < 3:
+                # لازم يكون فيه src و dst
+                write("Usage: mv <src> <dst>\n")
+            else:
+                src = parts[1]
+                dst = parts[2]
+                ok, msg = fs.mv(src, dst)
+                if not ok:
+                    write(msg + "\n")
+                else:
+                    refresh_tree()
+                    run_proc("fs_mv")
+
+
+        # ──find
+        elif c == "find":
+            if len(parts) < 2:
+                # لازم يكون فيه اسم
+                write("Usage: find <name>\n")
+            else:
+                name = parts[1]
+                ok, result = fs.find(name)
+                write(result + "\n")
+                if ok:
+                    run_proc("fs_find")
+
         else:
             write(f"{c}: command not found\n")
 
         write(get_prompt())
 
-    # ── initial prompt
     output.insert(tk.END, f"System Ready.\n{get_prompt()}", "protected")
     output.mark_set("protected_end", tk.END)
 
     def on_key(event):
         if event.keysym == "Return":
-            prompt   = get_prompt()
+            prompt    = get_prompt()
             last_line = output.get("end-1l linestart", "end-1c")
             cmd = last_line.split(prompt)[-1] if prompt in last_line else ""
             run_command(cmd)

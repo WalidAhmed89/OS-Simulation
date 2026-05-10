@@ -1,8 +1,4 @@
 # filesystem_core.py — Virtual Filesystem
-# ════════════════════════════════════════
-# كل حاجة بتتحفظ في fs.json
-# الـ structure زي Linux: tree of paths
-# الـ root هو /home وميقدرش يخرج منه
 
 import json
 import os
@@ -15,7 +11,6 @@ FS_ROOT = "/home"
 #  JSON helpers
 def _load():
     if not os.path.exists(FS_FILE):
-        # ── أول مرة: نعمل الـ /home directory
         default = {
             "cwd": "/home",
             "tree": {
@@ -45,7 +40,6 @@ def _now():
 #  Path helpers
 
 def _resolve(cwd, path):
-    """بتحول أي path (relative أو absolute) لـ absolute path"""
     if path == "~" or path == "":
         return FS_ROOT
     if path.startswith("/"):
@@ -53,7 +47,6 @@ def _resolve(cwd, path):
     else:
         full = cwd.rstrip("/") + "/" + path
 
-    # resolve ...
     parts = []
     for p in full.split("/"):
         if p == "..":
@@ -64,7 +57,6 @@ def _resolve(cwd, path):
 
     result = "/" + "/".join(parts)
 
-    # مينفعش يخرج من /home
     if not result.startswith(FS_ROOT):
         return FS_ROOT
 
@@ -72,7 +64,6 @@ def _resolve(cwd, path):
 
 
 def _children(tree, path):
-    """بترجع الـ direct children بس (مش nested)"""
     prefix = path.rstrip("/") + "/"
     result = []
     for k in tree:
@@ -80,7 +71,7 @@ def _children(tree, path):
             continue
         if k.startswith(prefix):
             rest = k[len(prefix):]
-            if "/" not in rest:  # direct child فقط
+            if "/" not in rest:
                 result.append(k)
     return sorted(result)
 
@@ -170,7 +161,6 @@ def mkdir(path, parents=False):
         target = _resolve(cwd, path)
         if target in tree:
             return False, f"mkdir: {path}: Already exists"
-        # نتأكد إن الـ parent موجود
         parent = "/".join(target.split("/")[:-1])
         if parent not in tree:
             return False, f"mkdir: {path}: Parent directory not found"
@@ -188,9 +178,7 @@ def touch(path, flag=None, ref_file=None, date_str=None):
 
     if target not in tree:
         if flag == "-c":
-            # -c: لو مش موجود متعملش
             return True, ""
-        # عمل ملف جديد
         tree[target] = {
             "type":     "file",
             "content":  "",
@@ -262,11 +250,9 @@ def rm(path, flags=""):
     if node["type"] == "dir" and "-r" not in flags:
         return False, f"rm: {path}: Is a directory (use rm -r)", False
 
-    # ── -i flag: بيطلب confirmation (بنرجع needs_confirm=True)
     if "-i" in flags:
         return True, f"rm: remove '{_basename(target)}'? (y/n)", True
 
-    # امسح الـ target وكل حاجة جواه
     keys_to_delete = [k for k in tree if k == target or k.startswith(target + "/")]
     for k in keys_to_delete:
         del tree[k]
@@ -347,16 +333,73 @@ def write_file(path, content, append=False):
     return True, ""
 
 
-def get_tree_for_ui():
-    """
-    بترجع الـ tree للـ Explorer UI بالشكل ده:
-    [
-      {"path": "/home/folder1", "name": "folder1", "type": "dir",  "depth": 0},
-      {"path": "/home/file1",   "name": "file1",   "type": "file", "depth": 0},
-    ]
-    """
+def mv(src, dst):
     data = _load()
     cwd  = data["cwd"]
+    tree = data["tree"]
+
+    src_path = _resolve(cwd, src)
+    dst_path = _resolve(cwd, dst)
+
+    if src_path not in tree:
+        return False, f"mv: {src}: No such file or directory"
+
+    if dst_path in tree and tree[dst_path]["type"] == "dir":
+        dst_path = dst_path.rstrip("/") + "/" + _basename(src_path)
+
+
+    if dst_path in tree:
+        return False, f"mv: {dst}: Destination already exists"
+
+
+    dst_parent = "/".join(dst_path.split("/")[:-1])
+    if dst_parent not in tree:
+        return False, f"mv: {dst}: No such directory"
+
+    keys_to_move = [k for k in tree if k == src_path or k.startswith(src_path + "/")]
+
+    for old_key in keys_to_move:
+        new_key = dst_path + old_key[len(src_path):]
+        tree[new_key] = tree.pop(old_key)
+
+    if dst_parent in tree:
+        tree[dst_parent]["modified"] = _now()
+
+    _save(data)
+    return True, ""
+
+
+def find(name, start_path=None):
+    data = _load()
+    tree = data["tree"]
+
+    if start_path is None:
+        start_path = FS_ROOT
+
+    results = []
+
+    for path in tree:
+
+        if path == FS_ROOT:
+            continue
+
+
+        if not path.startswith(start_path.rstrip("/") + "/") and path != start_path:
+            continue
+
+
+        if _basename(path) == name:
+            results.append(path)
+
+    if not results:
+        return False, f"find: '{name}': No such file or directory"
+
+    return True, "\n".join(results)
+
+
+
+def get_tree_for_ui():
+    data = _load()
     tree = data["tree"]
 
     def build(parent, depth):
@@ -369,8 +412,6 @@ def get_tree_for_ui():
                 "type":  node["type"],
                 "depth": depth,
             })
-            # لو folder وكان expanded نضيف أولاده
-            # الـ expansion بتتحكم فيها الـ UI
         return result
 
     return build(FS_ROOT, 0), data["cwd"]

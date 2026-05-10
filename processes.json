@@ -1,5 +1,5 @@
 {
-  "pid_counter": 77,
+  "pid_counter": 79,
   "processes": [
     {
       "pid": 3,
@@ -572,6 +572,22 @@
     {
       "pid": 75,
       "name": "fs_read",
+      "burst_time": 2,
+      "remaining_time": 0,
+      "memory_size": 8,
+      "state": "Finished"
+    },
+    {
+      "pid": 77,
+      "name": "Login",
+      "burst_time": 2,
+      "remaining_time": 0,
+      "memory_size": 16,
+      "state": "Finished"
+    },
+    {
+      "pid": 78,
+      "name": "fs_mkdir",
       "burst_time": 2,
       "remaining_time": 0,
       "memory_size": 8,

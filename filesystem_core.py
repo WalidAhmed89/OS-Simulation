@@ -144,6 +144,7 @@ def mkdir(path, parents=False):
     data = _load()
     cwd  = data["cwd"]
     tree = data["tree"]
+    path = path.replace(" ", "_")
 
     if parents:
         parts = path.split("/")
@@ -347,10 +348,8 @@ def mv(src, dst):
     if dst_path in tree and tree[dst_path]["type"] == "dir":
         dst_path = dst_path.rstrip("/") + "/" + _basename(src_path)
 
-
     if dst_path in tree:
         return False, f"mv: {dst}: Destination already exists"
-
 
     dst_parent = "/".join(dst_path.split("/")[:-1])
     if dst_parent not in tree:

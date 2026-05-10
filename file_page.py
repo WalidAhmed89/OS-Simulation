@@ -217,6 +217,8 @@ def open_file_page(role="ADMIN", login_window=None):
         if not name:
             messagebox.showerror("Error", "Enter folder name", parent=file_window)
             return
+
+        name = name.replace(" ", "_")
         target_dir = get_target_dir()
         old_cwd = fs.get_cwd()
         fs.cd(target_dir)
@@ -340,13 +342,11 @@ def open_file_page(role="ADMIN", login_window=None):
 
         c = parts[0]
 
-        # ── [تعديل] أضفنا mv و find و rmdir في قائمة help ──
         if c == "help":
             write("Commands: ls, ls -a, ls -l, pwd, cd, mkdir, mkdir -p,\n"
                   "          touch, stat, rm, rm -r, rm -i, rm -v, rmdir,\n"
                   "          mv <src> <dst>, find <name>, cat,\n"
                   "          echo text > file, clear\n")
-        # ── [نهاية التعديل] ──────────────────────────────────────────
 
         elif c == "clear":
             output.delete("1.0", tk.END)
@@ -436,7 +436,6 @@ def open_file_page(role="ADMIN", login_window=None):
                 else:
                     write(msg + "\n")
 
-        # rmdir
         elif c == "rmdir":
             if role in ["USER", "GUEST"]:
                 write("Permission denied\n")
@@ -477,7 +476,6 @@ def open_file_page(role="ADMIN", login_window=None):
                     else:
                         write(msg + "\n")
 
-        #──mv
         elif c == "mv":
             if role == "GUEST":
                 write("Permission denied\n")
@@ -494,8 +492,6 @@ def open_file_page(role="ADMIN", login_window=None):
                     refresh_tree()
                     run_proc("fs_mv")
 
-
-        # ──find
         elif c == "find":
             if len(parts) < 2:
                 # لازم يكون فيه اسم

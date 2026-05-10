@@ -1,5 +1,5 @@
 {
-  "cwd": "/home/Adham/Walid/Home",
+  "cwd": "/home/Walid_Ahmed",
   "tree": {
     "/home": {
       "type": "dir",
@@ -69,6 +69,12 @@
       "created": "2026-05-10 15:33:52",
       "modified": "2026-05-10 15:33:52",
       "accessed": "2026-05-10 15:33:52"
+    },
+    "/home/Walid_Ahmed": {
+      "type": "dir",
+      "created": "2026-05-10 16:07:23",
+      "modified": "2026-05-10 16:07:23",
+      "accessed": "2026-05-10 16:07:23"
     }
   }
 }

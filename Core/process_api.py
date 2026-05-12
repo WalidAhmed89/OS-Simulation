@@ -1,10 +1,10 @@
 # process_api.py — Shared Process & Memory State
 import json
 import os
-from Memory import MemoryManager
+from ui.Memory import MemoryManager
 
 
-JSON_FILE = "processes.json"
+JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "processes.json")
 
 # ── Memory manager
 memory_manager = MemoryManager(total_memory=512)

@@ -5,8 +5,9 @@ import subprocess
 import sys
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(BASE_DIR)
 
-from process_api import spawn_process, finish_process
+from Core.process_api import spawn_process, finish_process
 
 BG_COLOR     = "#f5f7fb"
 CARD_COLOR   = "#ffffff"
@@ -76,7 +77,7 @@ class LoginScreen:
                                      bg=CARD_COLOR, highlightthickness=0)
         self.logo_canvas.pack(pady=(0,15))
         try:
-            img = Image.open("logoo.png").convert("RGBA").resize((70,70), Image.Resampling.LANCZOS)
+            img = Image.open(os.path.join(BASE_DIR, "../assets/logoo.png")).convert("RGBA").resize((70, 70), Image.Resampling.LANCZOS)
             mask = Image.new("L",(70,70),0)
             ImageDraw.Draw(mask).ellipse((0,0,70,70), fill=255)
             img.putalpha(mask)
@@ -171,8 +172,10 @@ class LoginScreen:
         else:
             self.root.withdraw()
             # ── نفتح home ونحفظ الـ process عشان نراقبه
+            env = os.environ.copy()
+            env["PYTHONPATH"] = ROOT_DIR
             self._home_proc = subprocess.Popen(
-                [sys.executable, os.path.join(BASE_DIR, "home.py"), self._role]
+                [sys.executable, os.path.join(BASE_DIR, "home.py"), self._role], env=env
             )
             # ── نبدأ المراقبة
             self.root.after(500, self._watch_home)

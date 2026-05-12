@@ -2,7 +2,7 @@ import time
 import threading
 import tkinter as tk
 
-from process_api import spawn_process, finish_process, update_state
+from Core.process_api import spawn_process, finish_process, update_state
 
 # ── Theme ─────────────────────────────
 BG    = "#f5f7fb"

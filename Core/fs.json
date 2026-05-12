@@ -1,0 +1,43 @@
+{
+  "cwd": "/home",
+  "tree": {
+    "/home": {
+      "type": "dir",
+      "created": "2026-05-01 14:56:58",
+      "modified": "2026-05-10 15:28:52",
+      "accessed": "2026-05-01 14:56:58"
+    },
+    "/home/Frosted": {
+      "type": "dir",
+      "created": "2026-05-01 16:09:08",
+      "modified": "2026-05-01 16:09:08",
+      "accessed": "2026-05-01 16:09:08"
+    },
+    "/home/Frosted/Valorant": {
+      "type": "dir",
+      "created": "2026-05-01 16:09:26",
+      "modified": "2026-05-01 16:09:26",
+      "accessed": "2026-05-01 16:09:26"
+    },
+    "/home/Frosted/Valorant/Valorant.exe": {
+      "type": "file",
+      "content": "",
+      "created": "2026-05-01 16:11:15",
+      "modified": "2026-05-01 16:11:15",
+      "accessed": "2026-05-12 14:11:11"
+    },
+    "/home/OSProject": {
+      "type": "dir",
+      "created": "2026-05-01 16:13:48",
+      "modified": "2026-05-11 00:37:18",
+      "accessed": "2026-05-01 16:13:48"
+    },
+    "/home/OSProject/Readme.md": {
+      "type": "file",
+      "content": "BEST OS IN HITU\n",
+      "created": "2026-05-04 16:39:30",
+      "modified": "2026-05-04 16:39:51",
+      "accessed": "2026-05-12 14:12:24"
+    }
+  }
+}

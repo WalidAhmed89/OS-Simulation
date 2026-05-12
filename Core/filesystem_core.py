@@ -4,7 +4,7 @@ import json
 import os
 import datetime
 
-FS_FILE = "fs.json"
+FS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fs.json")
 FS_ROOT = "/home"
 
 

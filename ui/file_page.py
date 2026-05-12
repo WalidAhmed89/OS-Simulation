@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
-from process_api import spawn_process, finish_process, update_state
-import filesystem_core as fs
+from Core.process_api import spawn_process, finish_process, update_state
+from Core import filesystem_core as fs
 
 file_window_instance = None
 

@@ -1,4 +1,4 @@
-from splash import SplashScreen
+from ui.splash import SplashScreen
 
 if __name__ == "__main__":
     SplashScreen().run()

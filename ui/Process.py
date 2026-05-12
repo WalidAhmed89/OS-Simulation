@@ -5,7 +5,7 @@ from tkinter import ttk
 from collections import deque
 
 #process_api (JSON-backed)
-from process_api import (
+from Core.process_api import (
     memory_manager,
     spawn_process,
     kill_process,
